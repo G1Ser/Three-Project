@@ -11,6 +11,8 @@
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import useDebugStore from '@/store/useDebugStore';
 
 const props = defineProps<{
   title: string;
@@ -19,9 +21,12 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const useDebug = useDebugStore();
+const { isDebug } = storeToRefs(useDebug);
 
 const navigateToRoute = () => {
-  router.push({ name: props.routeName });
+  const pattern = isDebug.value ? 'debug' : 'release';
+  router.push({ name: props.routeName, query: { pattern } });
 };
 
 const getImageUrl = () => {
