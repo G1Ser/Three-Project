@@ -120,9 +120,56 @@ export class ThreeManager {
     window.removeEventListener('resize', this.onResize.bind(this));
     this.stopAnimation();
 
+    // 释放场景中的所有对象
+    this.disposeScene();
+
     // 其他资源的释放需要在具体组件中进行
     if (this.renderer) {
       this.renderer.dispose();
     }
+  }
+
+  // 销毁场景中的所有对象
+  disposeScene() {
+    // 递归遍历场景中的所有对象
+    this.scene.traverse((object) => {
+      // 销毁几何体
+      if (object instanceof THREE.Mesh) {
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+
+        // 销毁材质
+        if (object.material) {
+          // 处理材质数组
+          if (Array.isArray(object.material)) {
+            object.material.forEach((material) => {
+              this.disposeMaterial(material);
+            });
+          } else {
+            this.disposeMaterial(object.material);
+          }
+        }
+      }
+    });
+
+    // 清空场景
+    while (this.scene.children.length > 0) {
+      this.scene.remove(this.scene.children[0]);
+    }
+  }
+
+  // 销毁材质及其纹理
+  private disposeMaterial(material: THREE.Material) {
+    // 处理材质中的纹理
+    for (const key in material) {
+      const value = (material as any)[key];
+      if (value && typeof value === 'object' && 'isTexture' in value) {
+        value.dispose();
+      }
+    }
+
+    // 销毁材质
+    material.dispose();
   }
 }

@@ -1,4 +1,5 @@
 import vertexShader from './vertex.glsl';
-import fragmentShader from './fragment.glsl';
+import earthFragmentShader from './earth/fragment.glsl';
+import atmosphereFragmentShader from './atmoshpere/fragment.glsl';
 
-export { vertexShader, fragmentShader };
+export { vertexShader, earthFragmentShader, atmosphereFragmentShader };

@@ -14,7 +14,7 @@ void main()
     gl_Position = projectionMatrix * viewMatrix * modelPosition;
 
     // 将法线转换到视图空间
-    vec3 modelNormal = normalize(normalMatrix * normal);
+    vec3 modelNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
     vUv = uv;
     vNormal = modelNormal;
     vPosition = modelPosition.xyz;
