@@ -1,7 +1,7 @@
 <template>
   <div class="home-container">
     <h1>Three.js 项目</h1>
-    <div class="debug-switch">
+    <div class="debug-switch" v-if="isDev">
       <input type="checkbox" id="debug-toggle" class="toggle-input" v-model="isDebug" />
       <label for="debug-toggle" class="toggle-label">
         <span class="toggle-button" />
@@ -31,6 +31,7 @@ const router = useRouter();
 const useDebug = useDebugStore();
 const { isDebug } = storeToRefs(useDebug);
 const projectRoutes = ref<Array<{ name: string; title: string; image?: string }>>([]);
+const isDev = ref(import.meta.env.DEV);
 
 onMounted(() => {
   // 获取所有非首页的路由
