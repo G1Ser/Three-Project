@@ -20,6 +20,15 @@ const routes: RouteRecordRaw[] = [
       png: 'earth-shader.png',
     },
   },
+  {
+    path: '/terrain-shader',
+    name: 'terrain-shader',
+    component: defineAsyncComponent(() => import('@/views/TerrainShader/TerrainShader.vue')),
+    meta: {
+      title: 'Terrain Shader',
+      png: 'terrain-shader.png',
+    },
+  },
 ];
 
 export default routes;
