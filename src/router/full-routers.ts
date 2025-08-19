@@ -12,6 +12,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/hologram-shader',
+    name: 'hologram-shader',
+    component: defineAsyncComponent(() => import('@/views/HologramShader/HologramShader.vue')),
+    meta: {
+      title: 'Hologram Shader',
+      png: 'hologram-shader.png',
+    },
+  },
+  {
     path: '/earth-shader',
     name: 'earth-shader',
     component: defineAsyncComponent(() => import('@/views/EarthShader/EarthShader.vue')),
