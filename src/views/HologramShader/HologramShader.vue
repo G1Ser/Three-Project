@@ -108,7 +108,7 @@ const loadModel = () => {
     },
     (xhr) => {
       // 更新加载进度
-      loadingProgress.value = (xhr.loaded / xhr.total) * 100;
+      loadingProgress.value = Math.min((xhr.loaded / xhr.total) * 100, 100);
     },
     (error) => {
       console.error('Model Load Failed', error);
