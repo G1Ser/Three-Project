@@ -1,5 +1,11 @@
 <template>
   <canvas class="webgl" ref="canvasRef" />
+  <div class="loading-container" v-if="loading">
+    <div class="pokeball-container" :style="{ transform: `rotate(${loadingProgress * 1.8}deg)` }">
+      <img :src="PokeBall" />
+    </div>
+    <div class="loading-text">{{ Math.floor(loadingProgress) }}%</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -11,6 +17,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ThreeManager } from '@/utils/ThreeManager';
 import { PatternEnum } from '@/constant/pattern';
 import Model from './src/model/dream.glb';
+import PokeBall from './src/svg/pokeball.svg';
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let threeManager: ThreeManager;
@@ -19,6 +26,10 @@ let gui: dat.GUI;
 
 const route = useRoute();
 const pattern = route.query.pattern as PatternEnum;
+
+// 加载状态
+const loading = ref(true);
+const loadingProgress = ref(0);
 
 // 模型参数
 const modelParameters = {
@@ -65,12 +76,18 @@ const loadModel = () => {
 
       // 添加到场景
       threeManager.scene.add(model);
+
+      // 加载完成
+      setTimeout(() => {
+        loading.value = false;
+      }, 500); // 延迟关闭加载动画，让进度条完成到100%
     },
     (xhr) => {
-      //   console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      // 更新加载进度
+      loadingProgress.value = (xhr.loaded / xhr.total) * 100;
     },
     (error) => {
-      //   console.error('An error happened', error);
+      console.error('Model Load Failed', error);
     },
   );
 };
@@ -118,4 +135,31 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+}
+
+.pokeball-container {
+  width: 150px;
+  height: 150px;
+  transition: transform 0.3s ease;
+}
+
+.loading-text {
+  margin-top: 20px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+</style>
