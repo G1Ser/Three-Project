@@ -2,7 +2,13 @@
   <canvas class="webgl" ref="canvasRef" />
   <div class="loading-container" v-if="loading">
     <div class="pokeball-container" :style="{ transform: `rotate(${loadingProgress * 1.8}deg)` }">
-      <img :src="PokeBall" />
+      <img
+        :src="PokeBall"
+        :style="{
+          width: `${50 + loadingProgress * 0.7}px`,
+          height: `${50 + loadingProgress * 0.7}px`,
+        }"
+      />
     </div>
     <div class="loading-text">{{ Math.floor(loadingProgress) }}%</div>
   </div>
@@ -15,6 +21,8 @@ import { useRoute } from 'vue-router';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ThreeManager } from '@/utils/ThreeManager';
+import { colorTexture } from './src/utils/texture';
+import { vertexShader, fragmentShader } from './src/shader';
 import { PatternEnum } from '@/constant/pattern';
 import Model from './src/model/dream.glb';
 import PokeBall from './src/svg/pokeball.svg';
@@ -33,8 +41,8 @@ const loadingProgress = ref(0);
 
 // 模型参数
 const modelParameters = {
-  scale: 3,
-  rotation: -2.21,
+  scale: 5,
+  rotation: -1.9,
 };
 
 const initGUI = () => {
@@ -56,6 +64,20 @@ const initGUI = () => {
     .name('旋转角度');
 };
 
+const material = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
+  uniforms: {
+    uColorTexture: new THREE.Uniform(colorTexture),
+    uTime: new THREE.Uniform(0),
+  },
+  // 确保正确处理透明度
+  transparent: true,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+});
+
 const loadModel = () => {
   const loader = new GLTFLoader();
   loader.load(
@@ -66,10 +88,12 @@ const loadModel = () => {
       // 调整模型大小和角度
       updateModel();
 
-      // 添加全息效果材质
       model.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          const material = new THREE.ShaderMaterial({});
+          if (!child.geometry.attributes.normal) {
+            // 计算模型法线
+            child.geometry.computeVertexNormals();
+          }
           child.material = material;
         }
       });
@@ -97,25 +121,25 @@ const updateModel = () => {
     model.scale.set(modelParameters.scale, modelParameters.scale, modelParameters.scale);
   }
 };
+const clock = new THREE.Clock();
+
+const animate = () => {
+  if (model) {
+    const elapsedTime = clock.getElapsedTime();
+    material.uniforms.uTime.value = elapsedTime;
+  }
+};
 
 const initThree = () => {
   const canvas = canvasRef.value;
   if (!canvas) return;
   threeManager = new ThreeManager(canvas);
 
-  // 设置相机位置
-  threeManager.camera.position.set(0, 1, 5);
-
-  // 添加方向光
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(1, 1, 1);
-  threeManager.scene.add(directionalLight);
-
   // 加载模型
   loadModel();
 
   // 开始动画循环
-  threeManager.startAnimation();
+  threeManager.startAnimation(animate);
 };
 
 onMounted(() => {
@@ -151,9 +175,17 @@ onBeforeUnmount(() => {
 }
 
 .pokeball-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 150px;
   height: 150px;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease;
+
+  img {
+    rotate: 180deg;
+    transition: all 0.5s ease;
+  }
 }
 
 .loading-text {
